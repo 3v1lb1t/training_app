@@ -1,151 +1,105 @@
-// TrainingApp.tsx - CrossFit-style training application
-import React, { useState, useEffect } from 'react';
-import Parser from 'rss-parser';
+// <reference types="react" />
+import * as React from 'react';
+import { useState, useEffect } from 'react';
+import { getTodayWOD } from './logic/getTodayWOD';
 import './App.css';
 
-const wodTypes = ['single', 'couplet', 'triplet'];
-
-const movementLibrary = {
-  bodyweight: [
-    { name: 'Push-up', scale: 'Knee Push-up' },
-    { name: 'Air Squat', scale: 'Box Squat' },
-    { name: 'Pull-up', scale: 'Ring Row' },
-    { name: 'Burpee', scale: 'Step-back Burpee' },
-    { name: 'Sit-up', scale: 'Anchored Sit-up' }
-  ],
-  weightlifting: [
-    { name: 'Deadlift', scale: 'Kettlebell Deadlift' },
-    { name: 'Clean and Jerk', scale: 'Dumbbell Clean and Jerk' },
-    { name: 'Snatch', scale: 'Dumbbell Snatch' },
-    { name: 'Thruster', scale: 'Dumbbell Thruster' }
-  ],
-  cardio: [
-    { name: '400m Run', scale: '200m Run' },
-    { name: 'Row 500m', scale: 'Row 250m' },
-    { name: 'Bike 1km', scale: 'Bike 500m' },
-    { name: 'Jump Rope 100', scale: 'Jump Rope 50' }
-  ]
-};
-
-const getRandomMovements = (count: number) => {
-  const allMovements = [
-    ...movementLibrary.bodyweight,
-    ...movementLibrary.weightlifting,
-    ...movementLibrary.cardio
-  ];
-  const shuffled = allMovements.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-};
-
-const generateScheme = () => {
-  const formats = ['AMRAP', 'For Time', 'EMOM', 'Rounds for Quality'];
-  const schemes = ['10 min', '12 min', '15 min', '21-15-9', '3 RFT', '5 Rounds'];
-  const format = formats[Math.floor(Math.random() * formats.length)];
-  const scheme = schemes[Math.floor(Math.random() * schemes.length)];
-  return { format, scheme };
-};
-
-const generateDynamicWOD = (type: string) => {
-  const body = [...movementLibrary.bodyweight];
-  const weight = [...movementLibrary.weightlifting];
-  const cardio = [...movementLibrary.cardio];
-
-  let movements: any[] = [];
-  if (type === 'single') movements = getRandomMovements(1);
-  if (type === 'couplet') movements = [getRandomMovements(1)[0], getRandomMovements(1, 'weightlifting')[0]];
-  if (type === 'triplet') movements = [getRandomMovements(1)[0], getRandomMovements(1, 'weightlifting')[0], getRandomMovements(1, 'cardio')[0]];
-
-  const scheme = generateScheme();
-  return { type, ...scheme, movements };
-};
-
-const generateWeek = () => {
-  const week = [];
-  for (let i = 0; i < 7; i++) {
-    const type = wodTypes[Math.floor(Math.random() * wodTypes.length)];
-    const wod = generateDynamicWOD(type);
-    week.push({ day: i + 1, ...wod });
-  }
-  return week;
-};
-
 const TrainingApp: React.FC = () => {
-  const [crossfitWODs, setCrossfitWODs] = useState<any[]>([]);
+  const [todayWOD, setTodayWOD] = useState<any | null>(null);
+  const [completed, setCompleted] = useState<boolean>(() => {
+    const todayKey = new Date().toISOString().split('T')[0];
+    return localStorage.getItem('completed_' + todayKey) === 'true';
+  });
+  const [activeScale, setActiveScale] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchWODs = async () => {
-      try {
-        const parser = new Parser();
-        const feed = await parser.parseURL('https://www.crossfit.com/feeds/workouts');
-        const items = feed.items?.slice(0, 7) || [];
-        setCrossfitWODs(items.map((item, i) => ({
-          title: item.title,
-          link: item.link,
-          date: item.pubDate,
-          content: item.contentSnippet || item.content
-        })));
-      } catch (err) {
-        console.error('Error fetching CrossFit WODs:', err);
-      }
+    const wod = getTodayWOD();
+    setTodayWOD(wod);
+  }, []);
+
+  const markComplete = () => {
+    const todayKey = new Date().toISOString().split('T')[0];
+    localStorage.setItem('completed_' + todayKey, 'true');
+    setCompleted(true);
+  };
+
+  const regenerateWOD = () => {
+    const todayKey = new Date().toISOString().split('T')[0];
+    localStorage.removeItem('wod_' + todayKey);
+    const wod = getTodayWOD();
+    setTodayWOD(wod);
+    setCompleted(false);
+  };
+
+  const getWODExplanation = (wod: any) => {
+    const movementList = wod.movements.map((m: any) => m.name).join(", ");
+
+    const formatExplanation = {
+      emom: `EMOM stands for "Every Minute on the Minute." You will perform one movement at the start of each minute and rest for the remainder. For alternating EMOMs, minute 1 is movement 1, minute 2 is movement 2, and so on.`,
+      amrap: `AMRAP stands for "As Many Rounds As Possible." Your goal is to complete as many full rounds or reps of the given movements within the time limit.`,
+      "for time": `For Time workouts require you to complete the specified work as fast as possible. Record your time and aim for consistent pacing.`
     };
 
-    fetchWODs();
-  }, []);
-  const [currentWeek, setCurrentWeek] = useState<number>(() => {
-    const saved = localStorage.getItem('cf_week');
-    return saved ? parseInt(saved) : 0;
-  });
+    const formatKey = wod.format.toLowerCase().replace(/[^a-z]/g, '');
+    const explanation = formatExplanation[formatKey] || "This is a functional fitness workout format.";
 
-  const [weeks, setWeeks] = useState(() => {
-    const saved = localStorage.getItem('cf_weeks');
-    return saved ? JSON.parse(saved) : [generateWeek()];
-  });
+    return `This is a ${wod.format} workout in a ${wod.scheme} rep scheme. Expect a ${wod.stimulus} stimulus. Movements include: ${movementList}. ${explanation}`;
+  };
 
-  useEffect(() => {
-    localStorage.setItem('cf_weeks', JSON.stringify(weeks));
-    localStorage.setItem('cf_week', currentWeek.toString());
-  }, [weeks, currentWeek]);
-
-  const completeWeek = () => {
-    const newWeek = generateWeek();
-    const updated = [...weeks, newWeek];
-    setWeeks(updated);
-    setCurrentWeek(updated.length - 1);
+  const getMovementDescription = (m: any) => {
+    return `${m.name} is a ${m.category} movement. Focus on proper form and control. Recommended load: ${m.rx_load || 'bodyweight'}. Reps: ${m.rx_reps || 'as needed'}.`;
   };
 
   return (
     <div className="app-container">
-      <h1>Training App – CrossFit Weekly WODs</h1>
-      <h2>Week {currentWeek + 1}</h2>
+      <h1>Training App – Daily CrossFit WOD</h1>
 
-      <div className="calendar-row">
-        {weeks[currentWeek].map((wod: any, i: number) => (
-          <div className="calendar-day-square" key={i}>
-            <strong>Day {wod.day}</strong>
-            <p>Type: {wod.type}</p>
-            <ul>
-              {wod.movements.map((m: any, idx: number) => (
-                <li key={idx}>{m.name} <em>(Scale: {m.scale})</em></li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+      {todayWOD ? (
+        <div className="wod-card">
+          <h2>{todayWOD.format}: {todayWOD.scheme}</h2>
+          <p><strong>Stimulus:</strong> {todayWOD.stimulus}</p>
+          <p className="wod-explanation">{getWODExplanation(todayWOD)}</p>
 
-      <div className="crossfit-feed">
-        <h2>Latest from CrossFit.com</h2>
-        {crossfitWODs.map((wod, idx) => (
-          <div key={idx} className="crossfit-wod">
-            <a href={wod.link} target="_blank" rel="noopener noreferrer">
-              <strong>{wod.title}</strong>
-            </a>
-            <p>{wod.date}</p>
-            <p>{wod.content}</p>
-          </div>
-        ))}
-      </div>
+          <ul>
+            {todayWOD.movements.map((m: any, idx: number) => (
+              <li key={idx}>
+                <strong>{m.name}</strong>
+                {m.rx_load ? ` – RX Load: ${m.rx_load}` : ``}
+                {m.rx_reps ? ` – Reps: ${m.rx_reps}` : ``}
+                <p className="movement-desc">{getMovementDescription(m)}</p>
+                <button onClick={() => setActiveScale(m.name)}>View Scaling</button>
+                {activeScale === m.name && (
+                  <>
+                    <div className="modal-backdrop" onClick={() => setActiveScale(null)}></div>
+                    <div className="modal-content">
+                      <h3>Scaling Option for {m.name}</h3>
+                      <p>{m.scale}</p>
+                      {m.scale_load && <p><strong>Recommended Scale Load:</strong> {m.scale_load}</p>}
+                      <button onClick={() => setActiveScale(null)}>Close</button>
+                    </div>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
 
-      <button onClick={completeWeek}>Complete Week & Generate Next</button>
+          {!completed ? (
+            <button onClick={markComplete} className="complete-button">
+              Mark as Complete
+            </button>
+          ) : (
+            <p className="completed-label">✅ Workout Completed</p>
+          )}
+
+          {!completed && (
+            <button onClick={regenerateWOD} className="regen-button">
+              🔁 Regenerate WOD
+            </button>
+          )}
+        </div>
+      ) : (
+        <p>Loading WOD...</p>
+      )}
     </div>
   );
 };

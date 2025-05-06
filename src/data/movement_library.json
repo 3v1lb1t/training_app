@@ -1,0 +1,121 @@
+[
+  {
+    "name": "Push-up",
+    "category": "push",
+    "rx_reps": 15,
+    "scale": "Knee Push-up"
+  },
+  {
+    "name": "Handstand Push-up",
+    "category": "push",
+    "rx_reps": 10,
+    "scale": "Box Pike Push-up"
+  },
+  {
+    "name": "Dumbbell Shoulder Press",
+    "category": "push",
+    "rx_reps": 10,
+    "rx_load": "35/50",
+    "scale": "Seated Press"
+  },
+  {
+    "name": "Thruster",
+    "category": "push",
+    "rx_reps": 15,
+    "rx_load": "65/95",
+    "scale": "Wall Ball"
+  },
+  {
+    "name": "Pull-up",
+    "category": "pull",
+    "rx_reps": 12,
+    "scale": "Ring Row"
+  },
+  {
+    "name": "Chest-to-Bar Pull-up",
+    "category": "pull",
+    "rx_reps": 10,
+    "scale": "Jumping Pull-up"
+  },
+  {
+    "name": "Kettlebell Swing",
+    "category": "pull",
+    "rx_reps": 20,
+    "rx_load": "35/53",
+    "scale": "Russian Swing"
+  },
+  {
+    "name": "Air Squat",
+    "category": "squat",
+    "rx_reps": 25,
+    "scale": "Box Squat"
+  },
+  {
+    "name": "Front Squat",
+    "category": "squat",
+    "rx_reps": 15,
+    "rx_load": "95/135",
+    "scale": "Goblet Squat"
+  },
+  {
+    "name": "Deadlift",
+    "category": "hinge",
+    "rx_reps": 15,
+    "rx_load": "135/185",
+    "scale": "Kettlebell Deadlift"
+  },
+  {
+    "name": "Box Jump",
+    "category": "hinge",
+    "rx_reps": 20,
+    "scale": "Step-Up"
+  },
+  {
+    "name": "Sit-up",
+    "category": "core",
+    "rx_reps": 25,
+    "scale": "Anchored Sit-up"
+  },
+  {
+    "name": "Toes-to-Bar",
+    "category": "core",
+    "rx_reps": 15,
+    "scale": "Knees-to-Elbow"
+  },
+  {
+    "name": "V-Up",
+    "category": "core",
+    "rx_reps": 20,
+    "scale": "Tuck Crunch"
+  },
+  {
+    "name": "Run 400m",
+    "category": "cardio",
+    "rx_reps": 1,
+    "scale": "Run 200m"
+  },
+  {
+    "name": "Row 500m",
+    "category": "cardio",
+    "rx_reps": 1,
+    "scale": "Row 250m"
+  },
+  {
+    "name": "Bike 1km",
+    "category": "cardio",
+    "rx_reps": 1,
+    "scale": "Bike 500m"
+  },
+  {
+    "name": "Jump Rope x100",
+    "category": "cardio",
+    "rx_reps": 100,
+    "scale": "Jump Rope x50"
+  },
+  {
+    "name": "Bike 10 cal",
+    "category": "cardio",
+    "rx_reps": "1",
+    "scale": "Bike 35sec"
+  }
+]
