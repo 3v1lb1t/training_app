@@ -35,11 +35,21 @@ export const getTodayWOD = () => {
   const movements = getMovementsByScheme(scheme);
   const stimulus = determineStimulus(format, time, movements.length);
 
+  let rounds = undefined;
+  if (format === 'For Time') {
+    // estimate target rounds (simplified guess, can be refined)
+    if (time <= 6) rounds = 3;
+    else if (time <= 8) rounds = 4;
+    else if (time <= 10) rounds = 5;
+    else rounds = 6;
+  }
+
   const wod = {
     format,
     scheme: `${time} min ${format}${scheme !== 'single' ? ` (${scheme})` : ''}`,
     stimulus,
-    movements
+    movements,
+    ...(rounds ? { target_rounds: rounds } : {})
   };
 
   localStorage.setItem('wod_' + todayKey, JSON.stringify(wod));

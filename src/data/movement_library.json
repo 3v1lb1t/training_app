@@ -92,7 +92,7 @@
     "name": "Run 400m",
     "category": "cardio",
     "rx_reps": 1,
-    "scale": "Run 200m"
+    "scale": "Run/walk 200m"
   },
   {
     "name": "Row 500m",
@@ -117,5 +117,11 @@
     "category": "cardio",
     "rx_reps": "1",
     "scale": "Bike 35sec"
+  },
+  {
+    "name": "Burpee",
+    "category": "cardio",
+    "rx_reps": "10",
+    "scale": "Push-up then do a jumping jack"
   }
 ]
